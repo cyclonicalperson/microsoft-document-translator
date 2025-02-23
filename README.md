@@ -6,5 +6,5 @@ The program comes in 2 versions:<br>
 - **translator_gui.py** - has a GUI shown below:<br><br>
 ![image](https://github.com/user-attachments/assets/110f8e78-1e1a-43a8-a567-1b2801e93004)
 
-The program may appear <ins>__frozen__</ins> at times due to waiting for the Google Translate Ajax API to respond<br>
+The program may appear <ins>__frozen__</ins> at times due to waiting for the Google Translate Ajax API to respond<br><br>
 Text is translated with Google Translate, and as such translation errors are possible
