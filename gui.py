@@ -1,49 +1,69 @@
 import sys
-from PyQt6.QtCore import Qt
+import os
+import threading
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QTextEdit, QLabel, \
     QProgressBar, QFileDialog
 from word_translator import WordTranslationApp
 from excel_translator import ExcelTranslationApp
 from powerpoint_translator import PowerPointTranslationApp
 
+LANGUAGE_CODES = {
+            "Afrikaans": "af", "Albanian": "sq", "Amharic": "am", "Arabic": "ar", "Armenian": "hy", "Azerbaijani": "az",
+            "Basque": "eu", "Belarusian": "be", "Bengali": "bn", "Bosnian": "bs", "Bulgarian": "bg", "Catalan": "ca",
+            "Cebuano": "ceb", "Chichewa": "ny", "Chinese": "zh-CN", "Croatian": "hr", "Czech": "cs", "Danish": "da",
+            "Dutch": "nl", "English": "en", "Esperanto": "eo", "Estonian": "et", "Filipino": "tl", "Finnish": "fi",
+            "French": "fr", "Georgian": "ka", "German": "de", "Greek": "el", "Gujarati": "gu", "Haitian Creole": "ht",
+            "Hebrew": "iw", "Hindi": "hi", "Hungarian": "hu", "Icelandic": "is", "Indonesian": "id", "Irish": "ga",
+            "Italian": "it", "Japanese": "ja", "Javanese": "jw", "Kazakh": "kk", "Khmer": "km", "Korean": "ko",
+            "Kurdish": "ku", "Lao": "lo", "Latin": "la", "Latvian": "lv", "Lithuanian": "lt", "Macedonian": "mk",
+            "Malagasy": "mg", "Malay": "ms", "Malayalam": "ml", "Marathi": "mr", "Mongolian": "mn", "Myanmar": "my",
+            "Nepali": "ne", "Norwegian": "no", "Pashto": "ps", "Persian": "fa", "Polish": "pl", "Portuguese": "pt",
+            "Punjabi": "pa", "Romanian": "ro", "Russian": "ru", "Serbian (Cyrillic)": "sr", "Serbian (Latin)": "sr_Latn",
+            "Sindhi": "sd", "Sinhala": "si", "Slovak": "sk", "Slovenian": "sl", "Somali": "so", "Spanish": "es",
+            "Sundanese": "su", "Swahili": "sw", "Swedish": "sv", "Tajik": "tg", "Tamil": "ta", "Telugu": "te",
+            "Thai": "th", "Turkish": "tr", "Ukrainian": "uk", "Urdu": "ur", "Uzbek": "uz", "Vietnamese": "vi",
+            "Welsh": "cy", "Xhosa": "xh", "Yiddish": "yi", "Yoruba": "yo", "Zulu": "zu",
+        }
 
 class TranslationApp(QWidget):
     def __init__(self):
         super().__init__()
 
-        # Set the window properties
         self.setWindowTitle('Document Translator')
         self.setGeometry(100, 100, 800, 600)
 
-        # Main layout
-        main_layout = QVBoxLayout()
+        # Set the default values
+        self.document_type = ".docx"
+        self.document_path = ""  # Path to the document being translated
+        self.folder_path = ""  # Path to where the translated document will be saved
 
-        # Top navigation bar (File, Edit, Settings)
-        self.create_top_nav_bar()
+        """Initialize the UI components."""
+        main_layout = QVBoxLayout()
 
         # Left layout (For language selection and document type)
         left_layout = QVBoxLayout()
         left_layout.addWidget(QLabel("Select Document Type"))
-
-        # Dropdown for document types
         self.document_type_dropdown = QComboBox()
         self.document_type_dropdown.addItems(["Word", "Excel", "PowerPoint"])
+        self.document_type_dropdown.currentTextChanged.connect(self.update_document_type)  # Connect to the function
         left_layout.addWidget(self.document_type_dropdown)
 
-        # Language selection
+        # Create language selection dropdowns
         left_layout.addWidget(QLabel("From Language"))
         self.from_language_dropdown = QComboBox()
-        self.from_language_dropdown.addItems(["English", "Spanish", "French", "German", "Chinese"])
+        self.from_language_dropdown.addItems(sorted(LANGUAGE_CODES.keys()))  # Add languages dynamically
+        self.from_language_dropdown.setCurrentText("English")  # Set default choice to English
         left_layout.addWidget(self.from_language_dropdown)
 
         left_layout.addWidget(QLabel("To Language"))
         self.to_language_dropdown = QComboBox()
-        self.to_language_dropdown.addItems(["English", "Spanish", "French", "German", "Chinese"])
+        self.to_language_dropdown.addItems(sorted(LANGUAGE_CODES.keys()))  # Add languages dynamically
+        self.to_language_dropdown.setCurrentText("Serbian (Latin)")  # Set default choice to Serbian (Latin)
         left_layout.addWidget(self.to_language_dropdown)
 
         # Text area for input (Document Textbox)
         self.text_input = QTextEdit(self)
-        self.text_input.setPlaceholderText("Preview your document here...")
+        self.text_input.setPlaceholderText("Document input debug")
         left_layout.addWidget(self.text_input)
 
         # Button to select the input document
@@ -52,8 +72,8 @@ class TranslationApp(QWidget):
         left_layout.addWidget(self.select_document_button)
 
         # Button to select the target folder
-        self.select_folder_button = QPushButton('Select Target Folder')
-        self.select_folder_button.clicked.connect(self.select_target_folder)
+        self.select_folder_button = QPushButton('Select Target Destination')
+        self.select_folder_button.clicked.connect(self.select_target_destination)
         left_layout.addWidget(self.select_folder_button)
 
         # Translate button
@@ -86,88 +106,83 @@ class TranslationApp(QWidget):
         h_layout.addLayout(left_layout)
         h_layout.addLayout(right_layout)
 
-        # Add top navigation bar and horizontal layout to the main layout
-        main_layout.addLayout(self.top_nav_bar)
         main_layout.addLayout(h_layout)
-
-        # Set the main layout
         self.setLayout(main_layout)
 
-    def create_top_nav_bar(self):
-        """Create a simple top navigation bar with File, Edit, and Settings options."""
-        self.top_nav_bar = QHBoxLayout()
-
-        self.file_button = QPushButton('File')
-        self.edit_button = QPushButton('Edit')
-        self.settings_button = QPushButton('Settings')
-
-        self.top_nav_bar.addWidget(self.file_button)
-        self.top_nav_bar.addWidget(self.edit_button)
-        self.top_nav_bar.addWidget(self.settings_button)
+    def update_document_type(self, document_type):
+        """Update the document type suffix based on user selection."""
+        if document_type == "Word":
+            self.document_type = ".docx"
+        elif document_type == "Excel":
+            self.document_type = ".xlsx"
+        elif document_type == "PowerPoint":
+            self.document_type = ".pptx"
 
     def select_document(self):
         """Open a file dialog to select the input document and store its path."""
-        try:
-            file_dialog = QFileDialog(self)
-            file_dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
-            file_dialog.setNameFilter("All files (*.*)")
-            if file_dialog.exec():
-                file_paths = file_dialog.selectedFiles()
-                if file_paths:
-                    self.document_path = file_paths[0]  # Store the path to the selected document
-                    self.text_input.setText(
-                        f"Selected document: {self.document_path}")  # Display the path in the preview area
-                else:
-                    self.text_input.setText("No document selected.")
-        except Exception as e:
-            print(f"Error while selecting the document: {e}")
-
-    def select_target_folder(self):
-        """Open a folder dialog to select the target folder and store the path."""
-        folder_dialog = QFileDialog(self)
-        folder_dialog.setFileMode(QFileDialog.FileMode.Directory)
-        folder_dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
-        if folder_dialog.exec():
-            folder_paths = folder_dialog.selectedFiles()
-            if folder_paths:
-                self.folder_path = folder_paths[0]  # Store the selected folder path
-                self.translated_text_area.setText(f"Selected folder: {self.folder_path}")
+        file_dialog = QFileDialog(self)
+        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
+        file_dialog.setNameFilter(f"Documents (*{self.document_type})")
+        if file_dialog.exec():
+            file_paths = file_dialog.selectedFiles()
+            if file_paths:
+                self.document_path = file_paths[0]  # Store the path to the selected document
+                self.text_input.setText(f"Selected document: {self.document_path}")
             else:
-                self.translated_text_area.setText("No folder selected.")
+                self.text_input.setText("No document selected.")
+
+    def select_target_destination(self):
+        """Open a dialog to select the target destination (file)."""
+        file_dialog = QFileDialog(self)
+        file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        if hasattr(self, 'document_path') and self.document_path:
+            base_name = os.path.splitext(os.path.basename(self.document_path))[0]
+            default_file_name = f"{base_name}-translated{self.document_type}"
+        else:
+            default_file_name = f"translated{self.document_type}"
+
+        file_dialog.selectFile(default_file_name)
+
+        if file_dialog.exec():
+            selected_file = file_dialog.selectedFiles()[0]  # Get the selected file path
+            self.folder_path = selected_file  # Store the selected destination path
 
     def translate_document(self):
-        """Trigger the translation process based on selected document type and languages."""
+        """Start translation in a separate thread."""
+        selected_to_lang = self.to_language_dropdown.currentText()
+
+        # Map selected language names to language codes
+        to_lang_code = LANGUAGE_CODES.get(selected_to_lang, "en")
+
+        # Ensure document path and target folder are set
+        if hasattr(self, 'document_path') and hasattr(self, 'folder_path'):
+            # Create a new thread for translation to avoid blocking the GUI
+            translation_thread = threading.Thread(target=self.run_translation, args=(self.document_path, self.folder_path, to_lang_code))
+            translation_thread.start()
+
+    def run_translation(self, input_path, output_path, target_lang):
+        """Handle the translation process in a separate thread."""
         try:
-            # Get selected document type
-            document_type = self.document_type_dropdown.currentText()
-            input_path = self.document_path  # Get the document path from the file dialog
-            output_path = self.folder_path  # Get output path from the target folder dialog
-            target_lang = self.to_language_dropdown.currentText().lower()  # Selected target language
+            # Determine the file type based on the extension
+            file_extension = input_path.split('.')[-1].lower()
 
-            self.progress_bar.setValue(0)  # Reset the progress bar
-            self.translated_text_area.clear()
+            if file_extension == "docx":
+                app = WordTranslationApp(input_path=input_path, output_path=output_path, target_lang=target_lang)
 
-            # Initialize the correct translation app based on document type
-            if document_type == "Word":
-                translator = WordTranslationApp(input_path, output_path, target_lang)
-            elif document_type == "Excel":
-                translator = ExcelTranslationApp(input_path, output_path, target_lang)
-            elif document_type == "PowerPoint":
-                translator = PowerPointTranslationApp(input_path, output_path, target_lang)
+            elif file_extension == "xlsx":
+                app = ExcelTranslationApp(input_path=input_path, output_path=output_path, target_lang=target_lang)
+
+            elif file_extension == "pptx":
+                app = PowerPointTranslationApp(input_path=input_path, output_path=output_path, target_lang=target_lang)
+
             else:
-                raise ValueError(f"Unsupported document type: {document_type}")
+                raise ValueError("Unsupported file type. Only .docx, .xlsx, and .pptx files are supported.")
 
-            # Simulate translation progress
-            for i in range(1, 101):
-                self.progress_bar.setValue(i)
-                QApplication.processEvents()
-
-            # Once translation is complete, update the UI
-            self.translated_text_area.setText(f"Document has been translated and saved at: {output_path}")
+            # Show success message after translation is complete
+            self.translated_text_area.append(f"Document translated successfully to {output_path}")
 
         except Exception as e:
-            print(f"Error during translation: {e}")
-            self.translated_text_area.setText("An error occurred during translation.")
+            self.translated_text_area.append(f"Error: {str(e)}")
 
 
 if __name__ == "__main__":

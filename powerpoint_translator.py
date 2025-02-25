@@ -1,4 +1,4 @@
-import asyncio
+import threading
 from googletrans import Translator
 from pptx import Presentation
 from serbian_text_converter import SerbianTextConverter
@@ -13,11 +13,12 @@ class PowerPointTranslationApp:
         # Start the translation process
         self.translate_pptx_file()
 
-    async def translate_text(self, text, translator, target_lang='en'):
+    def translate_text(self, text, translator, target_lang='en'):
+        """Translates the input text."""
         if text and isinstance(text, str):
             try:
                 # Translate the text using Google Translate
-                translated = await translator.translate(text, dest=target_lang)
+                translated = translator.translate(text, dest=target_lang)
                 translated_text = translated.text  # Access the .text attribute of the Translated object
                 print(f"Original: {text} -> Translated: {translated_text}")
 
@@ -31,79 +32,96 @@ class PowerPointTranslationApp:
                 return text
         return text
 
-    async def translate_slide(self, slide, translator, target_lang='en'):
-        # Iterate through all shapes in the slide
+    def translate_slide(self, slide, translator, target_lang='en'):
+        """Iterate through all shapes in the slide and translate text."""
         for shape in slide.shapes:
             if hasattr(shape, "text") and shape.text:  # If the shape has text
                 original_text = shape.text
                 # Save the original font properties
-                original_font_size = self.get_font_size(shape)
+                original_font_size, original_font_color, original_font_bold, original_font_italic, original_font_underline = self.get_text_properties(shape)
 
                 # Translate the text
-                translated_text = await self.translate_text(original_text, translator, target_lang)
+                translated_text = self.translate_text(original_text, translator, target_lang)
 
-                # Reapply the original font size and formatting
-                self.set_text_and_formatting(shape, translated_text, original_font_size)
+                # Reapply the original formatting
+                self.set_text_and_formatting(shape, translated_text, original_font_size, original_font_color,
+                                             original_font_bold, original_font_italic, original_font_underline)
 
-    def get_font_size(self, shape):
-        """Extracts and returns the font size of the text in a shape."""
+    def get_text_properties(self, shape):
+        """Extracts and returns the font properties like size, color, bold, italic, and underline."""
+        font_size = None
+        font_color = None
+        font_bold = None
+        font_italic = None
+        font_underline = None
+
         if hasattr(shape, "text_frame") and shape.text_frame is not None:
             for paragraph in shape.text_frame.paragraphs:
                 for run in paragraph.runs:
-                    return run.font.size  # Assuming all runs in the shape have the same font size
-        return None  # Default if no font size found
+                    font_size = run.font.size
+                    font_color = run.font.color.rgb if run.font.color else None
+                    font_bold = run.font.bold
+                    font_italic = run.font.italic
+                    font_underline = run.font.underline
+                    break  # Assuming all runs have the same properties
 
-    def set_text_and_formatting(self, shape, translated_text, original_font_size):
-        """Sets the translated text and applies the original font size."""
+        return font_size, font_color, font_bold, font_italic, font_underline
+
+    def set_text_and_formatting(self, shape, translated_text, font_size, font_color, font_bold, font_italic, font_underline):
+        """Sets the translated text and applies the original formatting like font size, color, bold, italic, and underline."""
         if hasattr(shape, "text_frame") and shape.text_frame is not None:
-            # Clear any existing text (needed to reapply formatted text)
+            # Clear existing text
             shape.text_frame.clear()
 
             # Create a new paragraph and set the translated text
             p = shape.text_frame.add_paragraph()
             p.text = translated_text
 
-            # Reapply the original font size if available
-            if original_font_size is not None:
-                for run in p.runs:
-                    run.font.size = original_font_size
+            # Reapply original font size, color, bold, italic, and underline
+            for run in p.runs:
+                if font_size is not None:
+                    run.font.size = font_size
+                if font_color is not None:
+                    run.font.color.rgb = font_color
+                if font_bold is not None:
+                    run.font.bold = font_bold
+                if font_italic is not None:
+                    run.font.italic = font_italic
+                if font_underline is not None:
+                    run.font.underline = font_underline
+
+    def process_slide(self, slide, translator, target_lang='en'):
+        """Translate individual slide using threading for parallel processing."""
+        thread = threading.Thread(target=self.translate_slide, args=(slide, translator, target_lang))
+        thread.start()
+        return thread
 
     def translate_pptx_file(self):
+        """Translate the entire PowerPoint file."""
         if not self.input_path or not self.output_path or not self.target_language_code:
             print("Error: Please provide all required paths and target language.")
             return
 
         try:
-            # Get the current event loop
-            loop = asyncio.get_event_loop()
-
-            # Run the async method with the event loop
-            loop.run_until_complete(
-                self.translate_pptx_file_async(self.input_path, self.output_path, self.target_language_code))
-        except Exception as e:
-            print(f"Error: An error occurred: {e}")
-
-    async def translate_pptx_file_async(self, input_path, output_path, target_lang):
-        try:
             # Load the PowerPoint presentation
-            presentation = Presentation(input_path)
+            presentation = Presentation(self.input_path)
             translator = Translator()
+
+            # Create a list of threads for parallel processing of slides
+            threads = []
 
             # Process each slide in the presentation
             for slide_number, slide in enumerate(presentation.slides, start=1):
                 print(f"Translating slide: {slide_number}")
-                await self.translate_slide(slide, translator, target_lang)
+                thread = self.process_slide(slide, translator, self.target_language_code)
+                threads.append(thread)
+
+            # Wait for all threads to complete
+            for thread in threads:
+                thread.join()
 
             # Save the translated presentation
-            presentation.save(output_path)
-            print(f"PowerPoint file has been translated and saved as {output_path}.")
+            presentation.save(self.output_path)
+            print(f"PowerPoint file has been translated and saved as {self.output_path}.")
         except Exception as e:
             print(f"Error: An error occurred: {e}")
-
-
-# Create and run the application manually (Initialization with paths)
-#input_path = "path_to_your_input_pptx_file.pptx"  # Replace with actual input file path
-#output_path = "path_to_output_translated_pptx_file.pptx"  # Replace with desired output path
-#target_lang = "sr_Latn"  # Replace with the desired language code (e.g., "es" for Spanish)
-
-#app = PowerPointTranslationApp(input_path, output_path, target_lang)

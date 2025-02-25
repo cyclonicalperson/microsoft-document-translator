@@ -1,5 +1,5 @@
 import docx
-import asyncio
+import threading
 from googletrans import Translator
 from serbian_text_converter import SerbianTextConverter
 
@@ -14,7 +14,7 @@ class WordTranslationApp:
         # Start the translation process
         self.translate_document()
 
-    async def translate_paragraph(self, paragraph, translator, target_lang='en'):
+    def translate_paragraph(self, paragraph, translator, target_lang='en'):
         print(f"Processing paragraph: {paragraph.text}")  # Log the paragraph text being processed
         translated_runs = []
         current_run_text = ''  # This will hold the accumulated text from multiple runs
@@ -31,8 +31,8 @@ class WordTranslationApp:
         # If any text was accumulated, translate it as a whole
         if current_run_text:
             try:
-                # Await the translation coroutine
-                translated_text = await translator.translate(current_run_text, dest=target_lang)
+                # Translate the accumulated text
+                translated_text = translator.translate(current_run_text, dest=target_lang)
                 print(f"Translated text: {translated_text.text}")
 
                 # Create a new run for the translated text and preserve the original formatting
@@ -74,11 +74,16 @@ class WordTranslationApp:
 
         return paragraph
 
-    async def process_paragraphs(self, doc, translator, target_lang='en'):
+    def process_paragraphs(self, doc, translator, target_lang='en'):
+        # Create a list of threads for parallel processing
+        threads = []
+
         # Process all paragraphs
         for paragraph in doc.paragraphs:
             if paragraph.text.strip():  # Only process non-empty paragraphs
-                await self.translate_paragraph(paragraph, translator, target_lang)
+                thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
+                threads.append(thread)
+                thread.start()
 
         # Process tables in the document
         for table in doc.tables:
@@ -87,18 +92,28 @@ class WordTranslationApp:
                     # Translate the text in each cell
                     for paragraph in cell.paragraphs:
                         if paragraph.text.strip():  # Only process non-empty paragraphs in cells
-                            await self.translate_paragraph(paragraph, translator, target_lang)
+                            thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
+                            threads.append(thread)
+                            thread.start()
 
         # Process headers and footers (if any)
         for section in doc.sections:
             if section.header:
                 for paragraph in section.header.paragraphs:
                     if paragraph.text.strip():
-                        await self.translate_paragraph(paragraph, translator, target_lang)
+                        thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
+                        threads.append(thread)
+                        thread.start()
             if section.footer:
                 for paragraph in section.footer.paragraphs:
                     if paragraph.text.strip():
-                        await self.translate_paragraph(paragraph, translator, target_lang)
+                        thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
+                        threads.append(thread)
+                        thread.start()
+
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
 
     def translate_document(self):
         if not self.input_path or not self.output_path or not self.target_language_code:
@@ -106,34 +121,19 @@ class WordTranslationApp:
             return
 
         try:
-            # Get the current event loop
-            loop = asyncio.get_event_loop()
-
-            # Run the async method with the event loop
-            loop.run_until_complete(
-                self.translate_document_async(self.input_path, self.output_path, self.target_language_code))
-        except Exception as e:
-            print(f"Error: An error occurred: {e}")
-
-    async def translate_document_async(self, input_path, output_path, target_lang):
-        try:
             # Load the Word document
-            doc = docx.Document(input_path)
+            doc = docx.Document(self.input_path)
             translator = Translator()
 
             # Process paragraphs, tables, headers, and footers
-            await self.process_paragraphs(doc, translator, target_lang)
+            self.process_paragraphs(doc, translator, self.target_language_code)
 
             # Save the translated document
-            doc.save(output_path)
-            print(f"Document has been translated and saved as {output_path}.")
+            doc.save(self.output_path)
+            print(f"Document has been translated and saved as {self.output_path}.")
         except Exception as e:
             print(f"Error: An error occurred: {e}")
 
 
-# Create and run the application manually (Initialization with paths)
-#input_path = "path_to_your_input_docx_file.docx"  # Replace with actual input file path
-#output_path = "path_to_output_translated_file.docx"  # Replace with desired output path
-#target_lang = "es"  # Replace with the desired language code (e.g., "es" for Spanish)
-
-#app = WordTranslationApp(input_path, output_path, target_lang)
+# If you want to run this from another script, you can create an instance like this:
+# app = WordTranslationApp(input_path="input.docx", output_path="output_translated.docx", target_lang="sr_Latn")
