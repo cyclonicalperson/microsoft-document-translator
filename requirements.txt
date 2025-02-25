@@ -1,3 +1,6 @@
 python-docx
+python-pptx
+openpyxl
 googletrans==4.0.0-rc1
-tkinter
+serbian-text-converter
+PyQt6

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/word-translator.iml" filepath="$PROJECT_DIR$/.idea/word-translator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/microsoft-document-translator.iml" filepath="$PROJECT_DIR$/.idea/microsoft-document-translator.iml" />
     </modules>
   </component>
 </project>
