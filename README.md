@@ -1,7 +1,8 @@
-# word-translator
-Python program for translating Word documents without losing original formatting<br>
+# microsoft-document-translator
+Python program for translating supported Microsoft Office documents without losing original formatting<br>
+Supported filetypes: Word(.docx), Excel(.xlsx), PowerPoint(.pptx)
 
-The required dependencies must first be installed:
+The required dependencies and Python must first be installed:
 ```
 pip install -r requirements.txt
 ```
