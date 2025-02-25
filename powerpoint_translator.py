@@ -3,24 +3,6 @@ from googletrans import Translator
 from pptx import Presentation
 from serbian_text_converter import SerbianTextConverter
 
-# Google Translate language dictionary
-LANGUAGES = {
-    "en": "English",
-    "sr": "Serbian (Cyrillic)",
-    "sr_Latn": "Serbian (Latin)",
-    "es": "Spanish",
-    "fr": "French",
-    "de": "German",
-    "it": "Italian",
-    "ru": "Russian",
-    "pt": "Portuguese",
-    "zh-cn": "Chinese (Simplified)",
-    "ja": "Japanese",
-    "ko": "Korean",
-    "ar": "Arabic",
-    # Add more languages as necessary
-}
-
 
 class PowerPointTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en"):
@@ -119,9 +101,9 @@ class PowerPointTranslationApp:
             print(f"Error: An error occurred: {e}")
 
 
-# Create and run the application (Initialization with paths)
-input_path = "path_to_your_input_pptx_file.pptx"  # Replace with actual input file path
-output_path = "path_to_output_translated_pptx_file.pptx"  # Replace with desired output path
-target_lang = "sr_Latn"  # Replace with the desired language code (e.g., "es" for Spanish)
+# Create and run the application manually (Initialization with paths)
+#input_path = "path_to_your_input_pptx_file.pptx"  # Replace with actual input file path
+#output_path = "path_to_output_translated_pptx_file.pptx"  # Replace with desired output path
+#target_lang = "sr_Latn"  # Replace with the desired language code (e.g., "es" for Spanish)
 
-app = PowerPointTranslationApp(input_path, output_path, target_lang)
+#app = PowerPointTranslationApp(input_path, output_path, target_lang)

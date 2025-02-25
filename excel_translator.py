@@ -3,24 +3,6 @@ from googletrans import Translator
 import openpyxl
 from serbian_text_converter import SerbianTextConverter
 
-# Google Translate language dictionary (same as in original script)
-LANGUAGES = {
-    "en": "English",
-    "sr": "Serbian (Cyrillic)",
-    "sr_Latn": "Serbian (Latin)",
-    "es": "Spanish",
-    "fr": "French",
-    "de": "German",
-    "it": "Italian",
-    "ru": "Russian",
-    "pt": "Portuguese",
-    "zh-cn": "Chinese (Simplified)",
-    "ja": "Japanese",
-    "ko": "Korean",
-    "ar": "Arabic",
-    # Add more languages as necessary
-}
-
 
 class ExcelTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en"):
@@ -88,9 +70,9 @@ class ExcelTranslationApp:
             print(f"Error: An error occurred: {e}")
 
 
-# Create and run the application (Initialization with paths)
-input_path = "path_to_your_input_excel_file.xlsx"  # Replace with actual input file path
-output_path = "path_to_output_translated_excel_file.xlsx"  # Replace with desired output path
-target_lang = "sr_Latn"  # Replace with the desired language code (e.g., "es" for Spanish)
+# Create and run the application manually (Initialization with paths)
+#input_path = "path_to_your_input_excel_file.xlsx"  # Replace with actual input file path
+#output_path = "path_to_output_translated_excel_file.xlsx"  # Replace with desired output path
+#target_lang = "sr_Latn"  # Replace with the desired language code (e.g., "es" for Spanish)
 
-app = ExcelTranslationApp(input_path, output_path, target_lang)
+#app = ExcelTranslationApp(input_path, output_path, target_lang)
