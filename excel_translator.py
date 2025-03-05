@@ -3,17 +3,17 @@ from googletrans import Translator
 import openpyxl
 from serbian_text_converter import SerbianTextConverter
 
-
 class ExcelTranslationApp:
-    def __init__(self, input_path, output_path, target_lang="en"):
+    def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
         self.output_path = output_path
         self.target_language_code = target_lang  # Default to "en" (English)
+        self.progress_callback = progress_callback  # Callback to update progress bar
 
         # Start the translation process
         self.translate_excel_file()
 
-    def translate_cell(self, cell, translator, target_lang='en'):
+    def translate_cell(self, cell, translator, target_lang='en', progress_counter=None, total_cells=None):
         if cell.value:
             # Check if the value is a string, if not, skip the cell
             if isinstance(cell.value, str):
@@ -35,17 +35,26 @@ class ExcelTranslationApp:
             else:
                 print(f"Skipping non-string cell value: {cell.value} (Type: {type(cell.value)})")
 
+            # Update progress
+            if progress_counter is not None and total_cells is not None:
+                progress_counter[0] += 1  # Increment the counter
+                if self.progress_callback:
+                    progress = int((progress_counter[0] / total_cells) * 100)
+                    self.progress_callback(progress)
+
     def process_sheet(self, sheet, translator, target_lang='en'):
-        # Create a list of threads for parallel processing of cells
         threads = []
+        total_cells = sum(1 for row in sheet.iter_rows() for cell in row if isinstance(cell.value, str))
+        progress_counter = [0]  # Using a list to allow mutable counter in threads
 
         # Iterate through all rows and columns in the sheet
         for row in sheet.iter_rows():
             for cell in row:
-                # For each cell, create a new thread to handle translation
-                thread = threading.Thread(target=self.translate_cell, args=(cell, translator, target_lang))
-                threads.append(thread)
-                thread.start()
+                if isinstance(cell.value, str):  # Only process cells with text
+                    # Create a new thread to handle translation
+                    thread = threading.Thread(target=self.translate_cell, args=(cell, translator, target_lang, progress_counter, total_cells))
+                    threads.append(thread)
+                    thread.start()
 
         # Wait for all threads to complete
         for thread in threads:
@@ -72,3 +81,5 @@ class ExcelTranslationApp:
             print(f"Excel file has been translated and saved as {self.output_path}.")
         except Exception as e:
             print(f"Error: An error occurred: {e}")
+            if self.progress_callback:
+                self.progress_callback(0)  # Reset progress in case of error

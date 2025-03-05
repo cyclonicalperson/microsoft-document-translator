@@ -1,6 +1,6 @@
 import sys
 import os
-import threading
+from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QTextEdit, QLabel, \
     QProgressBar, QFileDialog
 from word_translator import WordTranslationApp
@@ -26,6 +26,48 @@ LANGUAGE_CODES = {
         }
 
 
+class TranslationThread(QThread):
+    # Signals to communicate with the main thread
+    progress_updated = pyqtSignal(int)  # For progress bar updates (0 to 100)
+    message_updated = pyqtSignal(str)  # For displaying messages (success, error)
+
+    def __init__(self, input_path, output_path, target_lang, document_type):
+        super().__init__()
+        self.input_path = input_path
+        self.output_path = output_path
+        self.target_lang = target_lang
+        self.document_type = document_type
+
+    def run(self):
+        """Handle the translation process in the background thread."""
+        try:
+            # Initialize the progress callback function
+            def progress_callback(progress):
+                self.progress_updated.emit(progress)
+
+            # Perform translation
+            if self.document_type == "docx":
+                WordTranslationApp(input_path=self.input_path, output_path=self.output_path,
+                                   target_lang=self.target_lang, progress_callback=progress_callback)
+
+            elif self.document_type == "xlsx":
+                ExcelTranslationApp(input_path=self.input_path, output_path=self.output_path,
+                                    target_lang=self.target_lang, progress_callback=progress_callback)
+
+            elif self.document_type == "pptx":
+                PowerPointTranslationApp(input_path=self.input_path, output_path=self.output_path,
+                                         target_lang=self.target_lang, progress_callback=progress_callback)
+
+            # Emit final success message
+            self.message_updated.emit(f"Document translated successfully to {self.output_path}")
+            self.progress_updated.emit(100)
+
+        except Exception as e:
+            # Emit error message in case of failure
+            self.message_updated.emit(f"Error: {str(e)}")
+            self.progress_updated.emit(0)
+
+
 class TranslationApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -34,6 +76,7 @@ class TranslationApp(QWidget):
         self.setGeometry(100, 100, 800, 600)
 
         # Set the default values
+        self.translation_thread = None
         self.document_type = ""
         self.document_path = ""  # Path to the document being translated
         self.folder_path = ""  # Path to where the translated document will be saved
@@ -142,33 +185,24 @@ class TranslationApp(QWidget):
 
         # Ensure document path and target folder are set
         if self.document_path and self.folder_path:
+            self.progress_bar.setValue(0)  # Reset progress bar
             # Create a new thread for translation to avoid blocking the GUI
-            translation_thread = threading.Thread(target=self.run_translation, args=(self.document_path, self.folder_path, to_lang_code))
-            translation_thread.start()
+            self.translation_thread = TranslationThread(self.document_path, self.folder_path, to_lang_code,
+                                                        self.document_type)
+            self.translation_thread.progress_updated.connect(self.update_progress)
+            self.translation_thread.message_updated.connect(self.update_message)
+            self.translation_thread.start()
         else:
             # Notify the user to select the input and output paths first
             self.text_box.append(f"The input and output must first be selected.")
 
-    def run_translation(self, input_path, output_path, target_lang):
-        """Handle the translation process in a separate thread."""
-        try:
-            if self.document_type == "docx":
-                WordTranslationApp(input_path=input_path, output_path=output_path, target_lang=target_lang)
+    def update_progress(self, progress):
+        """Update the progress bar based on worker's progress."""
+        self.progress_bar.setValue(progress)
 
-            elif self.document_type == "xlsx":
-                ExcelTranslationApp(input_path=input_path, output_path=output_path, target_lang=target_lang)
-
-            elif self.document_type == "pptx":
-                PowerPointTranslationApp(input_path=input_path, output_path=output_path, target_lang=target_lang)
-
-            else:
-                raise ValueError("Unsupported file type. Only .docx, .xlsx, and .pptx files are supported.")
-
-            # Show success message after translation is complete
-            self.text_box.append(f"Document translated successfully to {output_path}")
-
-        except Exception as e:
-            self.text_box.append(f"Error: {str(e)}")
+    def update_message(self, message):
+        """Update the message area based on worker's output."""
+        self.text_box.append(message)
 
 
 if __name__ == "__main__":

@@ -1,20 +1,21 @@
-import docx
 import threading
 from googletrans import Translator
+import docx
 from serbian_text_converter import SerbianTextConverter
 
 
 class WordTranslationApp:
-    def __init__(self, input_path, output_path, target_lang="en"):
-        # Initialize paths and target language
+    def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
         self.output_path = output_path
         self.target_language_code = target_lang  # Default to "en" (English)
+        self.progress_callback = progress_callback  # Callback to update progress bar
 
         # Start the translation process
         self.translate_document()
 
     def translate_paragraph(self, paragraph, translator, target_lang='en'):
+        """Translate a single paragraph."""
         print(f"Processing paragraph: {paragraph.text}")  # Log the paragraph text being processed
         translated_runs = []
         current_run_text = ''  # This will hold the accumulated text from multiple runs
@@ -77,43 +78,25 @@ class WordTranslationApp:
     def process_paragraphs(self, doc, translator, target_lang='en'):
         # Create a list of threads for parallel processing
         threads = []
+        total_paragraphs = len(doc.paragraphs)
+        progress_counter = [0]  # Using a list to allow mutable counter in threads
 
         # Process all paragraphs
         for paragraph in doc.paragraphs:
             if paragraph.text.strip():  # Only process non-empty paragraphs
                 thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
-                threads.append(thread)
                 thread.start()
-
-        # Process tables in the document
-        for table in doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    # Translate the text in each cell
-                    for paragraph in cell.paragraphs:
-                        if paragraph.text.strip():  # Only process non-empty paragraphs in cells
-                            thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
-                            threads.append(thread)
-                            thread.start()
-
-        # Process headers and footers (if any)
-        for section in doc.sections:
-            if section.header:
-                for paragraph in section.header.paragraphs:
-                    if paragraph.text.strip():
-                        thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
-                        threads.append(thread)
-                        thread.start()
-            if section.footer:
-                for paragraph in section.footer.paragraphs:
-                    if paragraph.text.strip():
-                        thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
-                        threads.append(thread)
-                        thread.start()
+                threads.append((thread, paragraph))
 
         # Wait for all threads to complete
-        for thread in threads:
+        for thread, paragraph in threads:
             thread.join()
+
+            # Update progress after the paragraph is fully translated
+            progress_counter[0] += 1
+            if self.progress_callback:
+                progress = int((progress_counter[0] / total_paragraphs) * 100)
+                self.progress_callback(progress)
 
     def translate_document(self):
         if not self.input_path or not self.output_path or not self.target_language_code:
@@ -125,7 +108,7 @@ class WordTranslationApp:
             doc = docx.Document(self.input_path)
             translator = Translator()
 
-            # Process paragraphs, tables, headers, and footers
+            # Process paragraphs in the document
             self.process_paragraphs(doc, translator, self.target_language_code)
 
             # Save the translated document
@@ -133,7 +116,5 @@ class WordTranslationApp:
             print(f"Document has been translated and saved as {self.output_path}.")
         except Exception as e:
             print(f"Error: An error occurred: {e}")
-
-
-# If you want to run this from another script, you can create an instance like this:
-# app = WordTranslationApp(input_path="input.docx", output_path="output_translated.docx", target_lang="sr_Latn")
+            if self.progress_callback:
+                self.progress_callback(0)  # Reset progress in case of error

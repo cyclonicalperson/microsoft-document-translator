@@ -5,10 +5,11 @@ from serbian_text_converter import SerbianTextConverter
 
 
 class PowerPointTranslationApp:
-    def __init__(self, input_path, output_path, target_lang="en"):
+    def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
         self.output_path = output_path
         self.target_language_code = target_lang  # Default to "en" (English)
+        self.progress_callback = progress_callback  # Callback to update progress bar
 
         # Start the translation process
         self.translate_pptx_file()
@@ -38,7 +39,8 @@ class PowerPointTranslationApp:
             if hasattr(shape, "text") and shape.text:  # If the shape has text
                 original_text = shape.text
                 # Save the original font properties
-                original_font_size, original_font_color, original_font_bold, original_font_italic, original_font_underline = self.get_text_properties(shape)
+                original_font_size, original_font_color, original_font_bold, original_font_italic, original_font_underline = self.get_text_properties(
+                    shape)
 
                 # Translate the text
                 translated_text = self.translate_text(original_text, translator, target_lang)
@@ -67,7 +69,8 @@ class PowerPointTranslationApp:
 
         return font_size, font_color, font_bold, font_italic, font_underline
 
-    def set_text_and_formatting(self, shape, translated_text, font_size, font_color, font_bold, font_italic, font_underline):
+    def set_text_and_formatting(self, shape, translated_text, font_size, font_color, font_bold, font_italic,
+                                font_underline):
         """Sets the translated text and applies the original formatting like font size, color, bold, italic, and underline."""
         if hasattr(shape, "text_frame") and shape.text_frame is not None:
             # Clear existing text
@@ -90,11 +93,16 @@ class PowerPointTranslationApp:
                 if font_underline is not None:
                     run.font.underline = font_underline
 
-    def process_slide(self, slide, translator, target_lang='en'):
+    def process_slide(self, slide, translator, target_lang='en', progress_counter=None, total_slides=None):
         """Translate individual slide using threading for parallel processing."""
-        thread = threading.Thread(target=self.translate_slide, args=(slide, translator, target_lang))
-        thread.start()
-        return thread
+        self.translate_slide(slide, translator, target_lang)
+
+        # Update progress after the slide is fully translated
+        if progress_counter is not None and total_slides is not None:
+            progress_counter[0] += 1  # Increment the counter
+            if self.progress_callback:
+                progress = int((progress_counter[0] / total_slides) * 100)
+                self.progress_callback(progress)
 
     def translate_pptx_file(self):
         """Translate the entire PowerPoint file."""
@@ -109,12 +117,16 @@ class PowerPointTranslationApp:
 
             # Create a list of threads for parallel processing of slides
             threads = []
+            total_slides = len(presentation.slides)
+            progress_counter = [0]  # Using a list to allow mutable counter in threads
 
             # Process each slide in the presentation
             for slide_number, slide in enumerate(presentation.slides, start=1):
                 print(f"Translating slide: {slide_number}")
-                thread = self.process_slide(slide, translator, self.target_language_code)
+                thread = threading.Thread(target=self.process_slide, args=(
+                slide, translator, self.target_language_code, progress_counter, total_slides))
                 threads.append(thread)
+                thread.start()
 
             # Wait for all threads to complete
             for thread in threads:
@@ -125,3 +137,5 @@ class PowerPointTranslationApp:
             print(f"PowerPoint file has been translated and saved as {self.output_path}.")
         except Exception as e:
             print(f"Error: An error occurred: {e}")
+            if self.progress_callback:
+                self.progress_callback(0)  # Reset progress in case of error
