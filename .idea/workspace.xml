@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="957132b0-5896-4360-9f21-842167a96013" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Financial Sample.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/input.docx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/input-translated.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/excel_translator.py" beforeDir="false" afterPath="$PROJECT_DIR$/excel_translator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/powerpoint_translator.py" beforeDir="false" afterPath="$PROJECT_DIR$/powerpoint_translator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/word_translator.py" beforeDir="false" afterPath="$PROJECT_DIR$/word_translator.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +51,10 @@
       <option name="presentableId" value="Default" />
       <updated>1740494306297</updated>
       <workItem from="1740494308270" duration="3382000" />
-      <workItem from="1740503495654" duration="12355000" />
+      <workItem from="1740503495654" duration="12873000" />
+      <workItem from="1740518691137" duration="1628000" />
+      <workItem from="1741102377391" duration="598000" />
+      <workItem from="1741209535702" duration="4986000" />
     </task>
     <task id="LOCAL-00001" summary="Merged old excel-translator and powerpoint-translator directories, new test GUI">
       <option name="closed" value="true" />
@@ -81,7 +80,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740503457975</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Bug fixing">
+      <option name="closed" value="true" />
+      <created>1740516950055</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1740516950055</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -105,9 +112,9 @@
     <option name="LAST_COMMIT_MESSAGE" value="Bug fixing" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/microsoft_document_translator$word_translator.coverage" NAME="word_translator Coverage Results" MODIFIED="1740511201150" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/microsoft_document_translator$gui.coverage" NAME="gui Coverage Results" MODIFIED="1740516530224" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/microsoft_document_translator$word_translator.coverage" NAME="word_translator Coverage Results" MODIFIED="1741211290113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/microsoft_document_translator$gui.coverage" NAME="gui Coverage Results" MODIFIED="1741214672119" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/microsoft_document_translator$excel_translator.coverage" NAME="excel_translator Coverage Results" MODIFIED="1740515208158" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/microsoft_document_translator$powerpoint_translator.coverage" NAME="powerpoint_translator Coverage Results" MODIFIED="1740516399886" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/microsoft_document_translator$powerpoint_translator.coverage" NAME="powerpoint_translator Coverage Results" MODIFIED="1740516643780" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
