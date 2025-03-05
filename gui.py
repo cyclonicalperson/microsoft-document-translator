@@ -81,6 +81,10 @@ class TranslationApp(QWidget):
         # Progress bar for translation
         self.progress_bar = QProgressBar(self)
         left_layout.addWidget(self.progress_bar)
+        self.progress_bar.setMinimum(0)  # Minimum value
+        self.progress_bar.setMaximum(100)  # Maximum value
+        self.progress_bar.setValue(0)  # Initial progress (0%)
+        self.show()
 
         # Right layout (For translated document display)
         right_layout = QVBoxLayout()
