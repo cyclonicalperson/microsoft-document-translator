@@ -73,7 +73,7 @@ class TranslationApp(QWidget):
         super().__init__()
 
         self.setWindowTitle('Document Translator')
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 400, 500)
 
         # Set the default values
         self.translation_thread = None
@@ -82,67 +82,51 @@ class TranslationApp(QWidget):
         self.folder_path = ""  # Path to where the translated document will be saved
 
         """Initialize the UI components."""
-        main_layout = QVBoxLayout()
-
-        # Left layout (For language selection and document type)
-        left_layout = QVBoxLayout()
+        layout = QVBoxLayout()
 
         # Create language selection dropdowns
-        left_layout.addWidget(QLabel("From Language"))
+        layout.addWidget(QLabel("From Language"))
         self.from_language_dropdown = QComboBox()
         self.from_language_dropdown.addItems(sorted(LANGUAGE_CODES.keys()))  # Add languages dynamically
         self.from_language_dropdown.setCurrentText("English")  # Set default choice to English
-        left_layout.addWidget(self.from_language_dropdown)
+        layout.addWidget(self.from_language_dropdown)
 
-        left_layout.addWidget(QLabel("To Language"))
+        layout.addWidget(QLabel("To Language"))
         self.to_language_dropdown = QComboBox()
         self.to_language_dropdown.addItems(sorted(LANGUAGE_CODES.keys()))  # Add languages dynamically
         self.to_language_dropdown.setCurrentText("Serbian (Latin)")  # Set default choice to Serbian (Latin)
-        left_layout.addWidget(self.to_language_dropdown)
+        layout.addWidget(self.to_language_dropdown)
 
         # Button to select the input document
         self.select_document_button = QPushButton('Select Document')
         self.select_document_button.clicked.connect(self.select_document)
-        left_layout.addWidget(self.select_document_button)
+        layout.addWidget(self.select_document_button)
 
         # Button to select the target folder
         self.select_folder_button = QPushButton('Select Target Destination')
         self.select_folder_button.clicked.connect(self.select_target_destination)
-        left_layout.addWidget(self.select_folder_button)
+        layout.addWidget(self.select_folder_button)
 
         # Translate button
         self.translate_button = QPushButton('Translate')
         self.translate_button.clicked.connect(self.translate_document)
-        left_layout.addWidget(self.translate_button)
+        layout.addWidget(self.translate_button)
 
         # Text area for input (Document Textbox)
         self.text_box = QTextEdit(self)
         self.text_box.setPlaceholderText("The translation progress will appear here...")
         self.text_box.setReadOnly(True)
-        left_layout.addWidget(self.text_box)
+        layout.addWidget(self.text_box)
 
         # Progress bar for translation
         self.progress_bar = QProgressBar(self)
-        left_layout.addWidget(self.progress_bar)
+        layout.addWidget(self.progress_bar)
         self.progress_bar.setMinimum(0)  # Minimum value
         self.progress_bar.setMaximum(100)  # Maximum value
         self.progress_bar.setValue(0)  # Initial progress (0%)
         self.show()
 
-        # Right layout (For translated document display)
-        right_layout = QVBoxLayout()
-        self.translated_text_area = QTextEdit(self)
-        self.translated_text_area.setPlaceholderText("Your translated document will appear here...")
-        self.translated_text_area.setReadOnly(True)
-        right_layout.addWidget(self.translated_text_area)
-
-        # Combine the left and right layout horizontally
-        h_layout = QHBoxLayout()
-        h_layout.addLayout(left_layout)
-        h_layout.addLayout(right_layout)
-
-        main_layout.addLayout(h_layout)
-        self.setLayout(main_layout)
+        self.setLayout(layout)
 
     def select_document(self):
         """Open a file dialog to select the input document and store its path."""
