@@ -1,6 +1,7 @@
 import sys
 import os
 from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QComboBox, QTextEdit, QLabel, \
     QProgressBar, QFileDialog
 from word_translator import WordTranslationApp
@@ -65,6 +66,7 @@ class TranslationApp(QWidget):
         super().__init__()
         self.setWindowTitle('Document Translator')
         self.setGeometry(100, 100, 400, 500)
+        self.setWindowIcon(QIcon("icon.png"))
 
         self.translation_thread = None
         self.document_type = ""

@@ -1,0 +1,56 @@
+/* Light Mode */
+QWidget {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+QLabel {
+    font-size: 14px;
+    color: #000000;
+}
+
+QPushButton {
+    background-color: #f0f0f0;
+    color: #000000;
+    border: 1px solid #cccccc;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+QPushButton:hover {
+    background-color: #e0e0e0;
+}
+
+QComboBox {
+    background-color: #f0f0f0;
+    color: #000000;
+    border: 1px solid #cccccc;
+    padding: 5px;
+    font-size: 14px;
+}
+
+QComboBox::drop-down {
+    background-color: #f0f0f0;
+}
+
+QTextEdit {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #cccccc;
+    padding: 10px;
+}
+
+QProgressBar {
+    border: 1px solid #cccccc;
+    background-color: #f0f0f0;
+    color: #000000;
+}
+
+QProgressBar::chunk {
+    background-color: #6aaf6b;
+}
+
+QScrollBar {
+    background-color: #f0f0f0;
+    color: #000000;
+}
