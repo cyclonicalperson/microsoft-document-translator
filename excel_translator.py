@@ -3,6 +3,7 @@ from googletrans import Translator
 import openpyxl
 from serbian_text_converter import SerbianTextConverter
 
+
 class ExcelTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
@@ -52,7 +53,8 @@ class ExcelTranslationApp:
             for cell in row:
                 if isinstance(cell.value, str):  # Only process cells with text
                     # Create a new thread to handle translation
-                    thread = threading.Thread(target=self.translate_cell, args=(cell, translator, target_lang, progress_counter, total_cells))
+                    thread = threading.Thread(target=self.translate_cell,
+                                              args=(cell, translator, target_lang, progress_counter, total_cells))
                     threads.append(thread)
                     thread.start()
 

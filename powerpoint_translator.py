@@ -39,8 +39,7 @@ class PowerPointTranslationApp:
             if hasattr(shape, "text") and shape.text:  # If the shape has text
                 original_text = shape.text
                 # Save the original font properties
-                original_font_size, original_font_color, original_font_bold, original_font_italic, original_font_underline = self.get_text_properties(
-                    shape)
+                original_font_size, original_font_color, original_font_bold, original_font_italic, original_font_underline = self.get_text_properties(shape)
 
                 # Translate the text
                 translated_text = self.translate_text(original_text, translator, target_lang)
@@ -123,8 +122,7 @@ class PowerPointTranslationApp:
             # Process each slide in the presentation
             for slide_number, slide in enumerate(presentation.slides, start=1):
                 print(f"Translating slide: {slide_number}")
-                thread = threading.Thread(target=self.process_slide, args=(
-                slide, translator, self.target_language_code, progress_counter, total_slides))
+                thread = threading.Thread(target=self.process_slide, args=(slide, translator, self.target_language_code, progress_counter, total_slides))
                 threads.append(thread)
                 thread.start()
 
