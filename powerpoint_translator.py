@@ -3,7 +3,6 @@ from pptx import Presentation
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
 
-
 class PowerPointTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
@@ -12,7 +11,7 @@ class PowerPointTranslationApp:
         self.progress_callback = progress_callback  # Callback to update progress bar
 
         # Set up Azure Translator credentials
-        self.endpoint = self.endpoint = "https://api.cognitive.microsofttranslator.com/"
+        self.endpoint = "https://api.cognitive.microsofttranslator.com/"
         self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
         self.region = "westeurope"
         self.client = TextTranslationClient(
@@ -24,7 +23,7 @@ class PowerPointTranslationApp:
         # Start the translation process
         self.translate_pptx_file()
 
-    def translate_text(self, text, translator, target_lang='en'):
+    def translate_text(self, text, target_lang='en'):
         """Translates the input text."""
         if text and isinstance(text, str):
             try:
@@ -40,16 +39,16 @@ class PowerPointTranslationApp:
                 return text
         return text
 
-    def translate_slide(self, slide, translator, target_lang='en'):
+    def translate_slide(self, slide, target_lang='en'):
         """Iterate through all shapes in the slide and translate text."""
         for shape in slide.shapes:
-            if hasattr(shape, "text") and shape.text:  # If the shape has text
-                original_text = shape.text
+            if hasattr(shape, "text_frame") and shape.text_frame is not None:
+                original_text = shape.text_frame.text
                 # Save the original font properties
                 original_font_size, original_font_color, original_font_bold, original_font_italic, original_font_underline = self.get_text_properties(shape)
 
                 # Translate the text
-                translated_text = self.translate_text(original_text, translator, target_lang)
+                translated_text = self.translate_text(original_text, target_lang)
 
                 # Reapply the original formatting
                 self.set_text_and_formatting(shape, translated_text, original_font_size, original_font_color,

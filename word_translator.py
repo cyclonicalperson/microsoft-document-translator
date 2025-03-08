@@ -1,8 +1,7 @@
 import threading
-import docx
+from docx import Document
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
-
 
 class WordTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
@@ -12,7 +11,7 @@ class WordTranslationApp:
         self.progress_callback = progress_callback
 
         # Set up Azure Translator credentials
-        self.endpoint = self.endpoint = "https://api.cognitive.microsofttranslator.com/"
+        self.endpoint = "https://api.cognitive.microsofttranslator.com/"
         self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
         self.region = "westeurope"
         self.client = TextTranslationClient(
@@ -98,7 +97,7 @@ class WordTranslationApp:
             return
 
         try:
-            doc = docx.Document(self.input_path)
+            doc = Document(self.input_path)
             self.process_paragraphs(doc, self.client, self.target_language_code)
             doc.save(self.output_path)
             print(f"Document has been translated and saved as {self.output_path}.")

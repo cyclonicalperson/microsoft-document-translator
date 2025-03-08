@@ -1,8 +1,7 @@
 import threading
-import openpyxl
+from openpyxl import load_workbook
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
-
 
 class ExcelTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
@@ -12,7 +11,7 @@ class ExcelTranslationApp:
         self.progress_callback = progress_callback
 
         # Set up Azure Translator credentials
-        self.endpoint = self.endpoint = "https://api.cognitive.microsofttranslator.com/"
+        self.endpoint = "https://api.cognitive.microsofttranslator.com/"
         self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
         self.region = "westeurope"
         self.client = TextTranslationClient(
@@ -76,12 +75,12 @@ class ExcelTranslationApp:
 
         try:
             # Load the Excel file
-            workbook = openpyxl.load_workbook(self.input_path)
+            workbook = load_workbook(self.input_path)
 
             # Process each sheet in the workbook
-            for sheet in workbook.sheetnames:
-                current_sheet = workbook[sheet]
-                print(f"Translating sheet: {sheet}")
+            for sheet_name in workbook.sheetnames:
+                current_sheet = workbook[sheet_name]
+                print(f"Translating sheet: {sheet_name}")
                 self.process_sheet(current_sheet, self.target_language_code)
 
             # Save the translated workbook
