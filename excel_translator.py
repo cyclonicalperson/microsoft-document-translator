@@ -1,33 +1,40 @@
 import threading
-from googletrans import Translator
 import openpyxl
-from serbian_text_converter import SerbianTextConverter
+from azure.ai.translation.text import TextTranslationClient
+from azure.core.credentials import AzureKeyCredential
 
 
 class ExcelTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
         self.output_path = output_path
-        self.target_language_code = target_lang  # Default to "en" (English)
-        self.progress_callback = progress_callback  # Callback to update progress bar
+        self.target_language_code = target_lang
+        self.progress_callback = progress_callback
+
+        # Set up Azure Translator credentials
+        self.endpoint = self.endpoint = "https://api.cognitive.microsofttranslator.com/"
+        self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
+        self.region = "westeurope"
+        self.client = TextTranslationClient(
+            endpoint=self.endpoint,
+            credential=AzureKeyCredential(self.subscription_key),
+            headers={"Ocp-Apim-Subscription-Region": self.region}
+        )
 
         # Start the translation process
         self.translate_excel_file()
 
-    def translate_cell(self, cell, translator, target_lang='en', progress_counter=None, total_cells=None):
+    def translate_cell(self, cell, target_lang='en', progress_counter=None, total_cells=None):
         if cell.value:
             # Check if the value is a string, if not, skip the cell
             if isinstance(cell.value, str):
                 original_text = cell.value
                 try:
-                    # Translate the text using Google Translate
-                    translated = translator.translate(original_text, dest=target_lang)
-                    translated_text = translated.text  # Access the .text attribute of the Translated object
-                    print(f"Original: {original_text} -> Translated: {translated_text}")
-
-                    # If translating to Serbian Latin, convert Cyrillic to Latin
-                    if target_lang == "sr_Latn":
-                        translated_text = SerbianTextConverter.to_latin(translated_text)
+                    response = self.client.translate(
+                        body=[original_text], to_language=[target_lang]
+                    )
+                    translated_text = response[0].translations[0].text
+                    print(f"Translated text: {translated_text}")
 
                     # Update the cell value with translated text
                     cell.value = translated_text
@@ -43,7 +50,7 @@ class ExcelTranslationApp:
                     progress = int((progress_counter[0] / total_cells) * 100)
                     self.progress_callback(progress)
 
-    def process_sheet(self, sheet, translator, target_lang='en'):
+    def process_sheet(self, sheet, target_lang='en'):
         threads = []
         total_cells = sum(1 for row in sheet.iter_rows() for cell in row if isinstance(cell.value, str))
         progress_counter = [0]  # Using a list to allow mutable counter in threads
@@ -54,7 +61,7 @@ class ExcelTranslationApp:
                 if isinstance(cell.value, str):  # Only process cells with text
                     # Create a new thread to handle translation
                     thread = threading.Thread(target=self.translate_cell,
-                                              args=(cell, translator, target_lang, progress_counter, total_cells))
+                                              args=(cell, target_lang, progress_counter, total_cells))
                     threads.append(thread)
                     thread.start()
 
@@ -70,13 +77,12 @@ class ExcelTranslationApp:
         try:
             # Load the Excel file
             workbook = openpyxl.load_workbook(self.input_path)
-            translator = Translator()
 
             # Process each sheet in the workbook
             for sheet in workbook.sheetnames:
                 current_sheet = workbook[sheet]
                 print(f"Translating sheet: {sheet}")
-                self.process_sheet(current_sheet, translator, self.target_language_code)
+                self.process_sheet(current_sheet, self.target_language_code)
 
             # Save the translated workbook
             workbook.save(self.output_path)

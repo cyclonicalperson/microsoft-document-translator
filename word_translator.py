@@ -1,98 +1,92 @@
 import threading
-from googletrans import Translator
 import docx
-from serbian_text_converter import SerbianTextConverter
+from azure.ai.translation.text import TextTranslationClient
+from azure.core.credentials import AzureKeyCredential
 
 
 class WordTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
         self.output_path = output_path
-        self.target_language_code = target_lang  # Default to "en" (English)
-        self.progress_callback = progress_callback  # Callback to update progress bar
+        self.target_language_code = target_lang
+        self.progress_callback = progress_callback
+
+        # Set up Azure Translator credentials
+        self.endpoint = self.endpoint = "https://api.cognitive.microsofttranslator.com/"
+        self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
+        self.region = "westeurope"
+        self.client = TextTranslationClient(
+            endpoint=self.endpoint,
+            credential=AzureKeyCredential(self.subscription_key),
+            headers={"Ocp-Apim-Subscription-Region": self.region}
+        )
 
         # Start the translation process
         self.translate_document()
 
-    def translate_paragraph(self, paragraph, translator, target_lang='en'):
+    def translate_paragraph(self, paragraph, client, target_lang='en'):
         """Translate a single paragraph."""
-        print(f"Processing paragraph: {paragraph.text}")  # Log the paragraph text being processed
+        print(f"Processing paragraph: {paragraph.text}")
         translated_runs = []
-        current_run_text = ''  # This will hold the accumulated text from multiple runs
+        current_run_text = ''
 
-        # Iterate through all the runs in the paragraph
         for run in paragraph.runs:
-            if run.text.strip():  # If there's any text to translate
-                print(f"Accumulating text: {run.text}")  # Debugging output to see the accumulated text
-                current_run_text += run.text  # Collect the text from the current run
+            if run.text.strip():
+                current_run_text += run.text
             else:
-                # Add the non-translated run (e.g., spaces or line breaks)
                 translated_runs.append(run)
 
-        # If any text was accumulated, translate it as a whole
         if current_run_text:
             try:
-                # Translate the accumulated text
-                translated_text = translator.translate(current_run_text, dest=target_lang)
-                print(f"Translated text: {translated_text.text}")
+                response = client.translate(
+                    body=[current_run_text], to_language=[target_lang]
+                )
+                translated_text = response[0].translations[0].text
+                print(f"Translated text: {translated_text}")
 
-                # Create a new run for the translated text and preserve the original formatting
-                translated_run = paragraph.add_run(translated_text.text)
-
-                # Preserve formatting (bold, italic, underline, font size, color, etc.)
-                translated_run.bold = run.bold
-                translated_run.italic = run.italic
-                translated_run.underline = run.underline
-                translated_run.font.size = run.font.size
-                translated_run.font.color.rgb = run.font.color.rgb
-                translated_run.font.name = run.font.name
-                translated_run.font.highlight_color = run.font.highlight_color
-
-                # If translating to Serbian Latin, convert Cyrillic to Latin
-                if target_lang == "sr_Latn":
-                    translated_run.text = SerbianTextConverter.to_latin(translated_run.text)
-
-                # Ensure space is added if necessary after translated text
-                if translated_run.text and not translated_run.text.endswith(' '):
-                    translated_run.text += ' '
+                translated_run = paragraph.add_run(translated_text)
+                # Preserve formatting from the last run
+                if paragraph.runs:
+                    last_run = paragraph.runs[-1]
+                    translated_run.bold = last_run.bold
+                    translated_run.italic = last_run.italic
+                    translated_run.underline = last_run.underline
+                    translated_run.font.size = last_run.font.size
+                    translated_run.font.color.rgb = last_run.font.color.rgb
+                    translated_run.font.name = last_run.font.name
+                    translated_run.font.highlight_color = last_run.font.highlight_color
 
                 translated_runs.append(translated_run)
             except Exception as e:
                 print(f"Error translating text: {current_run_text}, Error: {e}")
 
-        # Clear the paragraph and rebuild it with translated runs
+        # Clear and rebuild the paragraph
         paragraph.clear()
-
-        # Re-add the translated runs to the paragraph
         for translated_run in translated_runs:
-            paragraph.add_run(translated_run.text).bold = translated_run.bold
-            paragraph.runs[-1].italic = translated_run.italic
-            paragraph.runs[-1].underline = translated_run.underline
-            paragraph.runs[-1].font.size = translated_run.font.size
-            paragraph.runs[-1].font.color.rgb = translated_run.font.color.rgb
-            paragraph.runs[-1].font.name = translated_run.font.name
-            paragraph.runs[-1].font.highlight_color = translated_run.font.highlight_color
+            new_run = paragraph.add_run(translated_run.text)
+            new_run.bold = translated_run.bold
+            new_run.italic = translated_run.italic
+            new_run.underline = translated_run.underline
+            new_run.font.size = translated_run.font.size
+            new_run.font.color.rgb = translated_run.font.color.rgb
+            new_run.font.name = translated_run.font.name
+            new_run.font.highlight_color = translated_run.font.highlight_color
 
         return paragraph
 
-    def process_paragraphs(self, doc, translator, target_lang='en'):
-        # Create a list of threads for parallel processing
+    def process_paragraphs(self, doc, client, target_lang='en'):
         threads = []
         total_paragraphs = len(doc.paragraphs)
-        progress_counter = [0]  # Using a list to allow mutable counter in threads
+        progress_counter = [0]
 
-        # Process all paragraphs
         for paragraph in doc.paragraphs:
-            if paragraph.text.strip():  # Only process non-empty paragraphs
-                thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, translator, target_lang))
+            if paragraph.text.strip():
+                thread = threading.Thread(target=self.translate_paragraph, args=(paragraph, client, target_lang))
                 thread.start()
                 threads.append((thread, paragraph))
 
-        # Wait for all threads to complete
         for thread, paragraph in threads:
             thread.join()
-
-            # Update progress after the paragraph is fully translated
             progress_counter[0] += 1
             if self.progress_callback:
                 progress = int((progress_counter[0] / total_paragraphs) * 100)
@@ -104,17 +98,11 @@ class WordTranslationApp:
             return
 
         try:
-            # Load the Word document
             doc = docx.Document(self.input_path)
-            translator = Translator()
-
-            # Process paragraphs in the document
-            self.process_paragraphs(doc, translator, self.target_language_code)
-
-            # Save the translated document
+            self.process_paragraphs(doc, self.client, self.target_language_code)
             doc.save(self.output_path)
             print(f"Document has been translated and saved as {self.output_path}.")
         except Exception as e:
             print(f"Error: An error occurred: {e}")
             if self.progress_callback:
-                self.progress_callback(0)  # Reset progress in case of error
+                self.progress_callback(0)

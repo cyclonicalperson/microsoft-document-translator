@@ -1,6 +1,6 @@
-python-docx
-python-pptx
-openpyxl
-googletrans==4.0.0-rc1
-serbian-text-converter
 PyQt6
+python-docx
+openpyxl
+python-pptx
+azure-ai-translation-text
+azure-core

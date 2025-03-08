@@ -1,7 +1,7 @@
 import threading
-from googletrans import Translator
 from pptx import Presentation
-from serbian_text_converter import SerbianTextConverter
+from azure.ai.translation.text import TextTranslationClient
+from azure.core.credentials import AzureKeyCredential
 
 
 class PowerPointTranslationApp:
@@ -11,6 +11,16 @@ class PowerPointTranslationApp:
         self.target_language_code = target_lang  # Default to "en" (English)
         self.progress_callback = progress_callback  # Callback to update progress bar
 
+        # Set up Azure Translator credentials
+        self.endpoint = self.endpoint = "https://api.cognitive.microsofttranslator.com/"
+        self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
+        self.region = "westeurope"
+        self.client = TextTranslationClient(
+            endpoint=self.endpoint,
+            credential=AzureKeyCredential(self.subscription_key),
+            headers={"Ocp-Apim-Subscription-Region": self.region}
+        )
+
         # Start the translation process
         self.translate_pptx_file()
 
@@ -18,14 +28,11 @@ class PowerPointTranslationApp:
         """Translates the input text."""
         if text and isinstance(text, str):
             try:
-                # Translate the text using Google Translate
-                translated = translator.translate(text, dest=target_lang)
-                translated_text = translated.text  # Access the .text attribute of the Translated object
-                print(f"Original: {text} -> Translated: {translated_text}")
-
-                # If translating to Serbian Latin, convert Cyrillic to Latin
-                if target_lang == "sr_Latn":
-                    translated_text = SerbianTextConverter.to_latin(translated_text)
+                response = self.client.translate(
+                    body=[text], to_language=[target_lang]
+                )
+                translated_text = response[0].translations[0].text
+                print(f"Translated text: {translated_text}")
 
                 return translated_text
             except Exception as e:
@@ -92,9 +99,9 @@ class PowerPointTranslationApp:
                 if font_underline is not None:
                     run.font.underline = font_underline
 
-    def process_slide(self, slide, translator, target_lang='en', progress_counter=None, total_slides=None):
+    def process_slide(self, slide, target_lang='en', progress_counter=None, total_slides=None):
         """Translate individual slide using threading for parallel processing."""
-        self.translate_slide(slide, translator, target_lang)
+        self.translate_slide(slide, target_lang)
 
         # Update progress after the slide is fully translated
         if progress_counter is not None and total_slides is not None:
@@ -112,7 +119,6 @@ class PowerPointTranslationApp:
         try:
             # Load the PowerPoint presentation
             presentation = Presentation(self.input_path)
-            translator = Translator()
 
             # Create a list of threads for parallel processing of slides
             threads = []
@@ -122,7 +128,7 @@ class PowerPointTranslationApp:
             # Process each slide in the presentation
             for slide_number, slide in enumerate(presentation.slides, start=1):
                 print(f"Translating slide: {slide_number}")
-                thread = threading.Thread(target=self.process_slide, args=(slide, translator, self.target_language_code, progress_counter, total_slides))
+                thread = threading.Thread(target=self.process_slide, args=(slide, self.target_language_code, progress_counter, total_slides))
                 threads.append(thread)
                 thread.start()
 

@@ -9,21 +9,25 @@ from excel_translator import ExcelTranslationApp
 from powerpoint_translator import PowerPointTranslationApp
 
 LANGUAGE_CODES = {
-    "Afrikaans": "af", "Albanian": "sq", "Amharic": "am", "Arabic": "ar", "Armenian": "hy", "Azerbaijani": "az",
-    "Basque": "eu", "Belarusian": "be", "Bengali": "bn", "Bosnian": "bs", "Bulgarian": "bg", "Catalan": "ca",
-    "Cebuano": "ceb", "Chichewa": "ny", "Chinese": "zh-CN", "Croatian": "hr", "Czech": "cs", "Danish": "da",
-    "Dutch": "nl", "English": "en", "Esperanto": "eo", "Estonian": "et", "Filipino": "tl", "Finnish": "fi",
-    "French": "fr", "Georgian": "ka", "German": "de", "Greek": "el", "Gujarati": "gu", "Haitian Creole": "ht",
-    "Hebrew": "iw", "Hindi": "hi", "Hungarian": "hu", "Icelandic": "is", "Indonesian": "id", "Irish": "ga",
-    "Italian": "it", "Japanese": "ja", "Javanese": "jw", "Kazakh": "kk", "Khmer": "km", "Korean": "ko",
-    "Kurdish": "ku", "Lao": "lo", "Latin": "la", "Latvian": "lv", "Lithuanian": "lt", "Macedonian": "mk",
-    "Malagasy": "mg", "Malay": "ms", "Malayalam": "ml", "Marathi": "mr", "Mongolian": "mn", "Myanmar": "my",
-    "Nepali": "ne", "Norwegian": "no", "Pashto": "ps", "Persian": "fa", "Polish": "pl", "Portuguese": "pt",
-    "Punjabi": "pa", "Romanian": "ro", "Russian": "ru", "Serbian (Cyrillic)": "sr", "Serbian (Latin)": "sr_Latn",
-    "Sindhi": "sd", "Sinhala": "si", "Slovak": "sk", "Slovenian": "sl", "Somali": "so", "Spanish": "es",
-    "Sundanese": "su", "Swahili": "sw", "Swedish": "sv", "Tajik": "tg", "Tamil": "ta", "Telugu": "te",
-    "Thai": "th", "Turkish": "tr", "Ukrainian": "uk", "Urdu": "ur", "Uzbek": "uz", "Vietnamese": "vi",
-    "Welsh": "cy", "Xhosa": "xh", "Yiddish": "yi", "Yoruba": "yo", "Zulu": "zu",
+    # Major Languages
+    "Arabic": "ar", "Chinese (Simplified)": "zh-Hans", "Chinese (Traditional)": "zh-Hant", "English": "en",
+    "French": "fr", "German": "de", "Hindi": "hi", "Italian": "it", "Japanese": "ja", "Korean": "ko",
+    "Portuguese (Brazil)": "pt", "Russian": "ru", "Spanish": "es",
+
+    # Complete List (A-Z)
+    "Afrikaans": "af", "Albanian": "sq", "Amharic": "am", "Armenian": "hy", "Assamese": "as", "Azerbaijani": "az",
+    "Bangla": "bn", "Bashkir": "ba", "Basque": "eu", "Bosnian": "bs", "Bulgarian": "bg",
+    "Cantonese (Traditional)": "yue", "Catalan": "ca", "Croatian": "hr", "Czech": "cs", "Danish": "da", "Dari": "prs",
+    "Dutch": "nl", "Estonian": "et", "Fijian": "fj", "Filipino": "fil", "Finnish": "fi", "Galician": "gl",
+    "Georgian": "ka", "Greek": "el", "Gujarati": "gu", "Haitian Creole": "ht", "Hebrew": "he", "Hungarian": "hu",
+    "Icelandic": "is", "Indonesian": "id", "Irish": "ga", "Kannada": "kn", "Kazakh": "kk", "Khmer": "km",
+    "Klingon": "tlh-Latn", "Lao": "lo", "Latvian": "lv", "Lithuanian": "lt", "Macedonian": "mk", "Malagasy": "mg",
+    "Malay": "ms", "Malayalam": "ml", "Maltese": "mt", "Maori": "mi", "Marathi": "mr",
+    "Mongolian (Cyrillic)": "mn-Cyrl", "Myanmar": "my", "Nepali": "ne", "Norwegian": "nb", "Odia": "or", "Pashto": "ps",
+    "Persian": "fa", "Polish": "pl", "Punjabi": "pa", "Romanian": "ro", "Serbian (Cyrillic)": "sr-Cyrl",
+    "Serbian (Latin)": "sr-Latn", "Slovak": "sk", "Slovenian": "sl", "Somali": "so", "Swahili": "sw", "Swedish": "sv",
+    "Tamil": "ta", "Telugu": "te", "Thai": "th", "Turkish": "tr", "Ukrainian": "uk", "Urdu": "ur", "Uzbek": "uz",
+    "Vietnamese": "vi"
 }
 
 
