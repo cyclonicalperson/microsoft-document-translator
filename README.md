@@ -11,4 +11,4 @@ To run the program, just open **gui.py**<br><br>
 ![image](https://github.com/user-attachments/assets/37e67d3e-4065-4fd9-9c46-4d047f12e55a)
 
 
-Text is translated with Google Translate, and as such translation errors are likely
+Text is translated with the Azure AI Translator
