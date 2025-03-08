@@ -70,7 +70,7 @@ class TranslationApp(QWidget):
         super().__init__()
         self.setWindowTitle('Document Translator')
         self.setGeometry(100, 100, 400, 500)
-        self.setWindowIcon(QIcon("icon.png"))
+        self.setWindowIcon(QIcon("icon.ico"))
 
         self.translation_thread = None
         self.document_type = ""
