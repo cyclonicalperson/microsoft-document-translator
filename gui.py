@@ -166,7 +166,7 @@ class TranslationApp(QWidget):
             self.translation_thread.message_updated.connect(self.update_message)
             self.translation_thread.start()
         else:
-            self.text_box.append("Please select both input and output paths.")
+            self.text_box.append("<font color='red'>Please select both input and output paths.")
 
     def update_progress(self, progress):
         """Update the progress bar."""

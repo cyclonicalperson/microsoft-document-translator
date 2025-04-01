@@ -3,6 +3,7 @@ from docx import Document
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
 
+
 class WordTranslationApp:
     def __init__(self, input_path, output_path, target_lang="en", progress_callback=None):
         self.input_path = input_path
@@ -12,7 +13,9 @@ class WordTranslationApp:
 
         # Set up Azure Translator credentials
         self.endpoint = "https://api.cognitive.microsofttranslator.com/"
-        self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
+        key_path = "key.txt"  # The file holding the translator key
+        with open(key_path, 'r', encoding='utf-8') as file:
+            self.subscription_key = file.read()
         self.region = "westeurope"
         self.client = TextTranslationClient(
             endpoint=self.endpoint,

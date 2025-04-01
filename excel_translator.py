@@ -12,7 +12,9 @@ class ExcelTranslationApp:
 
         # Set up Azure Translator credentials
         self.endpoint = "https://api.cognitive.microsofttranslator.com/"
-        self.subscription_key = "Cbp6CjRkzbt1WdI5taT02TFvCUms0omfSKUIKJ5O6aUaIw3dprGCJQQJ99BCAC5RqLJXJ3w3AAAbACOGZYQb"
+        key_path = "key.txt"  # The file holding the translator key
+        with open(key_path, 'r', encoding='utf-8') as file:
+            self.subscription_key = file.read()
         self.region = "westeurope"
         self.client = TextTranslationClient(
             endpoint=self.endpoint,
