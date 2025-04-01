@@ -12,41 +12,43 @@ Microsoft Document Translator is a Python application designed to translate Micr
 - **User-Friendly Interface**: Offers a graphical user interface (GUI) for easy interaction.
 - **Cross-Platform Compatibility**: Runs on Windows, macOS, and Linux systems.
 
-## Requirements
+## Usage
+
+Run the compiled `.exe` from the `dist/` folder.
+
+Or run the `.py` file:
+
+```bash
+python gui.py
+```
+
+## Requirements (for development)
 
 - **Python**: Ensure Python 3.10 is installed.
 - **Dependencies**: Install required Python packages using the provided `requirements.txt` file.
 - **Azure Subscription**: An active Azure subscription is necessary to access the Azure AI Translator service.
 
-## Installation
 
-1. **Clone the Repository**:
+## Installation (for development)
 
-   ```bash
-   git clone https://github.com/cyclonicalperson/microsoft-document-translator.git
-   ```
+1. Clone the repository:
 
-2. **Navigate to the Project Directory**:
+    ```bash
+    git clone https://github.com/cyclonicalperson/microsoft-document-translator.git
+    cd microsoft-document-translator
+    ```
 
-   ```bash
-   cd microsoft-document-translator
-   ```
+2. Install dependencies:
 
-3. **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+3. Build the executable (optional):
 
-## Usage
-
-- **Run the GUI**:
-
-   ```bash
-   python gui.py
-   ```
-
-- **Executable Version**: For Windows users, an portable executable (.exe) file is available for direct use without the need for Python installation.
+    ```bash
+    pyinstaller --onefile --noconsole --icon=icon.ico --name="Microsoft Document Translator" gui.py
+    ```
 
 ## Azure AI Translator Setup
 
@@ -65,8 +67,3 @@ Microsoft Document Translator is a Python application designed to translate Micr
 ## License
 
 This project is licensed under the GNU General Public License v3.0. For more details, refer to the [LICENSE](https://github.com/cyclonicalperson/microsoft-document-translator/blob/main/LICENSE) file.
-
-## Acknowledgements
-
-- [Azure AI Translator](https://azure.microsoft.com/en-us/services/cognitive-services/translator/) for providing the translation service.
-- [Microsoft Translator](https://www.microsoft.com/en-us/translator/) for their comprehensive translation tools and resources.
